@@ -1,15 +1,21 @@
 # claude-wa
 
+[![npm version](https://img.shields.io/npm/v/claude-wa.svg)](https://www.npmjs.com/package/claude-wa)
+[![node](https://img.shields.io/node/v/claude-wa.svg)](https://www.npmjs.com/package/claude-wa)
+[![license](https://img.shields.io/npm/l/claude-wa.svg)](./LICENSE)
+
 **Talk to [Claude Code](https://claude.com/claude-code) from WhatsApp.** Install,
 scan a QR with your phone, and your **"Message yourself"** chat becomes a live
-Claude Code console — type a message, Claude reads it and does it, and it
+Claude Code console — type a message, Claude reads it and does the work, and it
 remembers the conversation. No PIN, no app on the server, no friction.
 
-```
-You (Message yourself):  add a /health endpoint and run the tests
-claude-wa:               ✅ Added GET /health, tests green (12 passed).
-You:                     now commit and push it
-claude-wa:               Pushed abc123 to main. ✅      ← remembers context
+```text
+You ▸  what's failing in the auth tests?
+🤖    The token-expiry check is off by one (`exp <= now`). Want me to fix it?
+You ▸  yes, fix it and run the tests
+🤖    Fixed and ran the suite — 12 passed. ✅
+You ▸  commit and push
+🤖    Pushed abc123 to main. ✅            ← remembers the whole thread
 ```
 
 One Node process links to WhatsApp via the multi-device protocol
@@ -18,22 +24,36 @@ the `claude` CLI.
 
 ---
 
-## Install & run
+## Quickstart
 
-You need [Claude Code](https://claude.com/claude-code) installed and logged in on
-the machine (the `claude` command on `PATH`).
+You need [Claude Code](https://claude.com/claude-code) installed and logged in
+(the `claude` command on your `PATH`).
 
-```bash
-npx claude-wa                 # one-off
-# or
-npm i -g claude-wa && claude-wa
+```console
+$ npx claude-wa
+
+claude-wa
+  Access  : OPEN — message your self-chat, no PIN
+  Mode    : ACTION (edits + shell) · remembers context
+  Workdir : /home/you/project
+
+=========  SCAN THIS QR WITH WHATSAPP  =========
+  █▀▀▀▀▀█ ▄ ▀▄█ █▀▀▀▀▀█
+  █ ███ █ █▀▄ ▄ █ ███ █     WhatsApp ▸ Settings ▸
+  █ ▀▀▀ █ ▀ █▄▀ █ ▀▀▀ █     Linked Devices ▸ Link a device
+  ▀▀▀▀▀▀▀ █▄▀▄█ ▀▀▀▀▀▀▀
+  …
+
+✅  Connected. Your WhatsApp is now a Claude Code remote.
 ```
 
-First run prints a **QR code**. On your phone:
-**WhatsApp → Settings → Linked Devices → Link a device** → scan it.
-
-That's it. Open your **"Message yourself"** chat and type anything — it goes
+Now open your **"Message yourself"** chat and just type — every message goes
 straight to Claude Code. No prefix needed.
+
+```console
+# or install it for keeps
+npm i -g claude-wa && claude-wa
+```
 
 ## What you can send
 
@@ -61,7 +81,7 @@ shared or you want a second factor.
 
 ## Options
 
-```
+```text
 --read-only          Read & answer only — no edits, no shell
 --no-continue        Each message is a fresh, standalone prompt (no memory)
 --pin [value]        Opt into PIN mode (value optional; auto-generated if omitted)
@@ -83,14 +103,13 @@ persisted to `~/.claude-wa/config.json`. WhatsApp auth lives in
 
 ## Trust
 
-Claude Code refuses to act in an "untrusted" workspace. The first time, run:
+Action mode needs a trusted workspace, and you can't accept a terminal dialog
+from your phone — so claude-wa **auto-trusts the working directory** on startup
+(running it there is the consent). To pre-trust without starting:
 
 ```bash
 claude-wa --accept-trust --workdir /path/to/project
 ```
-
-(or open `claude` in that directory once and accept the dialog), then start
-`claude-wa`.
 
 ## Security
 
@@ -132,11 +151,10 @@ pm2 start claude-wa -- --workdir ~/myproject
   `claude-wa` once — a fresh link heals the WhatsApp/Signal session.
 - **`claude binary not found`**: install Claude Code or pass `--claude-bin
   /full/path/to/claude`.
-- **"workspace has not been trusted"**: run `claude-wa --accept-trust`.
 
 ## How it works
 
-```
+```text
 WhatsApp  ──(Baileys multi-device)──►  claude-wa  ──spawn──►  claude -p [--continue]
    ▲                                       │
    └────────────── reply ◄─────────────────┘
