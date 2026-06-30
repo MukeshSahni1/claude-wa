@@ -5,12 +5,16 @@
 // explicit `--allowedTools` grant, which gives full headless action with no
 // permission prompts and no root block. The prompt is fed on STDIN to avoid the
 // ~3s "no stdin" wait and any positional-argument ambiguity.
+//
+// `opts.continue` adds `--continue` so successive WhatsApp messages share one
+// growing conversation (memory across messages) instead of starting fresh.
 
 import { spawn, exec } from 'node:child_process';
 
-export function runClaude(prompt, cfg) {
+export function runClaude(prompt, cfg, opts = {}) {
   return new Promise((resolve) => {
     const args = ['-p'];
+    if (opts.continue) args.push('--continue');
     if (cfg.permissionMode) args.push('--permission-mode', cfg.permissionMode);
     if (cfg.allowedTools && cfg.allowedTools.length) args.push('--allowedTools', ...cfg.allowedTools);
 

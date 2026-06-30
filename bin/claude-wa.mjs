@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // claude-wa — talk to Claude Code from WhatsApp.
-// First run prints a QR; scan it, then text "<PIN> <message>" from that account.
+// First run prints a QR; scan it, then just message your "Message yourself" chat.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -24,24 +24,29 @@ function printHelp() {
 Usage:
   claude-wa [options]
 
+By default (open mode) there is NO PIN: your "Message yourself" chat becomes the
+Claude Code console — every message is read and executed, with memory across
+messages. Other chats are ignored.
+
 Options:
   --read-only          Claude can read & answer but not edit or run shell
-  --pin <pin>          Set the access PIN (default: auto-generated & saved)
-  --allow <nums>       Extra allowed sender numbers, comma-separated
+  --no-continue        Treat each message as a fresh, standalone prompt
+  --pin [value]        Opt into PIN mode: messages must start with "<PIN> "
+                       (value optional — auto-generated & saved if omitted)
+  --allow <nums>       Also accept messages from these numbers (comma-separated)
+  --chat <number>      Bind the console to a specific chat instead of self-chat
+  --any-chat           Accept messages in ANY chat (⚠ Claude replies everywhere)
   --workdir <dir>      Directory Claude runs in (default: current directory)
   --claude-bin <path>  Path to the claude binary (default: claude on PATH)
-  --no-shell           Disable the  !cmd  /  sh  raw-shell shortcuts
+  --no-shell           Disable the  !cmd  raw-shell shortcut
   --pair <phone>       Link via pairing code instead of QR (digits only)
   --accept-trust       Trust Claude Code for the workdir, then exit (run once)
   -h, --help           Show this help
   -v, --version        Show version
 
-First run prints a QR — scan it in WhatsApp > Linked Devices.
-Then, from that account, text:   <PIN> <message>
-
-Security: anyone who can post the PIN from an allowed account can drive Claude
-Code (and shell, in action mode) on this machine. Keep the PIN secret; use
---read-only if you're unsure, and run in a dedicated --workdir.`);
+First run prints a QR — scan it in WhatsApp > Linked Devices, then message
+yourself. Security: in open mode the gate is access to your WhatsApp; in action
+mode messages can edit code and run shell. Use --read-only or --pin if unsure.`);
 }
 
 if (has('--help') || has('-h')) { printHelp(); process.exit(0); }
@@ -49,8 +54,12 @@ if (has('--version') || has('-v')) { console.log(pkg.version); process.exit(0); 
 
 const cfg = loadConfig({
   readOnly: has('--read-only'),
+  noContinue: has('--no-continue'),
+  pinFlag: has('--pin'),
   pin: get('--pin'),
   allow: get('--allow'),
+  chat: get('--chat'),
+  anyChat: has('--any-chat'),
   workdir: get('--workdir'),
   claudeBin: get('--claude-bin'),
   noShell: has('--no-shell'),
@@ -65,10 +74,12 @@ if (has('--accept-trust')) {
 
 // Startup banner.
 console.log(`\nclaude-wa v${pkg.version}`);
-console.log(`  PIN     : ${cfg.pin}${cfg.generatedPin ? '   (auto-generated — saved to ' + cfg.configFile + ')' : ''}`);
-console.log(`  Mode    : ${cfg.readOnly ? 'READ-ONLY' : 'ACTION (edits + shell)'}`);
+console.log(`  Access  : ${cfg.requirePin ? `PIN  ${cfg.pin}${cfg.generatedPin ? '  (auto-generated, saved)' : ''}` : 'OPEN — message your self-chat, no PIN'}`);
+console.log(`  Mode    : ${cfg.readOnly ? 'READ-ONLY' : 'ACTION (edits + shell)'}${cfg.continueConversation ? ' · remembers context' : ''}`);
 console.log(`  Workdir : ${cfg.workdir}`);
-console.log(`  Allowed : self${cfg.allow.length ? ' + ' + cfg.allow.join(', ') : ' only'}`);
+if (cfg.anyChat) console.log('  Chats   : ⚠ ANY chat (Claude will reply everywhere)');
+else if (cfg.chat) console.log(`  Chat    : bound to ${cfg.chat}`);
+if (cfg.allow.length) console.log(`  Allow   : + ${cfg.allow.join(', ')}`);
 console.log(`  Claude  : ${cfg.claudeBin}\n`);
 
 startBridge(cfg).catch((e) => {
