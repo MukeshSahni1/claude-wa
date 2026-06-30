@@ -18,10 +18,17 @@ import qrcode from 'qrcode-terminal';
 import pino from 'pino';
 import { existsSync, mkdirSync } from 'node:fs';
 import { runClaude, runShell } from './claude.mjs';
-import { isTrusted, saveBoundJid } from './config.mjs';
+import { isTrusted, acceptTrust, saveBoundJid } from './config.mjs';
 
 const seen = new Set(); // de-dupe processed message ids
 function markSeen(id) { if (id) { seen.add(id); if (seen.size > 1000) seen.clear(); } }
+
+// Serialize Claude/shell runs so two quick messages don't race on --continue.
+let queue = Promise.resolve();
+function enqueue(fn) {
+  queue = queue.then(fn).catch((e) => console.log('[handler] error:', e?.message));
+  return queue;
+}
 
 function helpText(cfg) {
   const lead = cfg.requirePin ? `${cfg.pin} ` : '';
@@ -50,6 +57,8 @@ async function handle(raw, jid, sock, cfg, state, who) {
     state.started = false;
     return void reply('🆕 Started a fresh conversation. Send your next message.');
   }
+
+  try { await sock.sendPresenceUpdate('composing', jid); } catch { /* best-effort "typing…" */ }
 
   const isShell = cfg.shell && (raw.startsWith('!') || lower.startsWith('sh '));
   let out;
@@ -91,7 +100,7 @@ async function onMessage(m, sock, cfg, state) {
     const raw = text.slice(cfg.pin.length + 1).trim();
     if (!raw) return;
     markSeen(id);
-    return handle(raw, jid, sock, cfg, state, fromMe ? 'self' : num);
+    return enqueue(() => handle(raw, jid, sock, cfg, state, fromMe ? 'self' : num));
   }
 
   // OPEN MODE — no PIN; only the console (self) chat, or allow-listed numbers.
@@ -109,16 +118,18 @@ async function onMessage(m, sock, cfg, state) {
   if (!console_) return;
 
   markSeen(id);
-  return handle(text, jid, sock, cfg, state, fromMe ? 'self' : num);
+  return enqueue(() => handle(text, jid, sock, cfg, state, fromMe ? 'self' : num));
 }
 
 export async function startBridge(cfg) {
   if (!existsSync(cfg.authDir)) mkdirSync(cfg.authDir, { recursive: true });
 
   if (!cfg.readOnly && !isTrusted(cfg.workdir)) {
-    console.log(`\n⚠  Claude Code is not yet trusted for: ${cfg.workdir}`);
-    console.log('   Action mode (edits/shell) may be refused until you trust it.');
-    console.log('   Fix: run  claude-wa --accept-trust  once (or open `claude` there and accept the dialog).\n');
+    // Action mode needs a trusted workspace, and you can't accept a terminal
+    // dialog from your phone — running claude-wa here is the consent. Auto-trust
+    // so commands actually work. (Read-only mode never auto-trusts.)
+    try { acceptTrust(cfg.workdir); console.log(`🔓 Trusted Claude Code for: ${cfg.workdir}`); }
+    catch (e) { console.log('⚠  could not auto-trust workdir:', e?.message); }
   }
 
   const logger = pino({ level: 'silent' });

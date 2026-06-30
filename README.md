@@ -104,6 +104,25 @@ your WhatsApp.
 - Long jobs (> ~150s) get the `claude` process killed by the timeout — use a real
   session for big multi-step work; texts are best for quick asks and fixes.
 
+> **Heads-up:** claude-wa links via an unofficial WhatsApp library (Baileys), which
+> is against WhatsApp's Terms of Service. Use a number you're willing to risk;
+> automated accounts can be rate-limited or banned. Provided as-is, no warranty.
+
+## Keep it running
+
+It runs in the foreground. To keep it alive across logout/reboot, use any process
+manager:
+
+```bash
+# nohup
+nohup claude-wa --workdir ~/myproject > ~/claude-wa.log 2>&1 &
+
+# pm2
+pm2 start claude-wa -- --workdir ~/myproject
+
+# systemd (sketch) — ExecStart=/usr/bin/claude-wa --workdir /srv/app
+```
+
 ## Troubleshooting
 
 - **No reply after texting?** In open mode, make sure you're texting your own
