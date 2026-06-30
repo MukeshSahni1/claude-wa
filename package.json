@@ -1,0 +1,44 @@
+{
+  "name": "claude-wa",
+  "version": "0.1.0",
+  "description": "Talk to Claude Code from WhatsApp. Install, scan a QR, and drive Claude Code from your phone — read, edit, run shell, deploy.",
+  "type": "module",
+  "bin": {
+    "claude-wa": "bin/claude-wa.mjs"
+  },
+  "exports": {
+    ".": "./src/bridge.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bin/claude-wa.mjs"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "whatsapp",
+    "baileys",
+    "cli",
+    "bot",
+    "ai",
+    "remote",
+    "agent"
+  ],
+  "author": "Dark Lord",
+  "license": "MIT",
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "pino": "^9.5.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
