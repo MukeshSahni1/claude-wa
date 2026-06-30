@@ -35,6 +35,14 @@
   ],
   "author": "Dark Lord",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MukeshSahni1/claude-wa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MukeshSahni1/claude-wa/issues"
+  },
+  "homepage": "https://github.com/MukeshSahni1/claude-wa#readme",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.9",
