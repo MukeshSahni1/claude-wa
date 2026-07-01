@@ -9,6 +9,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
+import { PERSONA_TEMPLATE } from './fans.mjs';
 
 const HOME = homedir();
 const CONFIG_DIR = process.env.CLAUDE_WA_DIR || join(HOME, '.claude-wa');
@@ -16,6 +17,9 @@ const CONFIG_FILE = join(CONFIG_DIR, 'config.json');
 
 const ACTION_TOOLS = ['Bash', 'Edit', 'Write', 'MultiEdit', 'Read', 'Glob', 'Grep', 'WebFetch'];
 const READONLY_TOOLS = ['Read', 'Glob', 'Grep'];
+// Fan mode is chat-only: nothing is allowed, and the dangerous ones are
+// explicitly disallowed as a second lock.
+const FAN_DISALLOWED = ['Bash', 'Edit', 'Write', 'MultiEdit', 'NotebookEdit', 'Read', 'Glob', 'Grep', 'WebFetch', 'WebSearch', 'Task'];
 
 function readJSON(path) {
   try { return JSON.parse(readFileSync(path, 'utf8')); } catch { return null; }
@@ -52,19 +56,39 @@ export function loadConfig(cli = {}) {
   const allowRaw = cli.allow || process.env.CLAUDE_WA_ALLOW || (file.allow || []).join(',');
   const allow = String(allowRaw).split(',').map((s) => s.replace(/[^0-9]/g, '')).filter(Boolean);
 
+  // Fan mode: the number becomes a public AI persona (chat-only, no tools).
+  const fans = Boolean(cli.fans) || process.env.CLAUDE_WA_FANS === '1' || Boolean(file.fans);
+  const personaFile = cli.persona || process.env.CLAUDE_WA_PERSONA || file.personaFile || join(CONFIG_DIR, 'persona.md');
+  let persona = null;
+  if (fans) {
+    if (!existsSync(personaFile)) {
+      // First run: drop the editable template so `--fans` works out of the box.
+      try { writeFileSync(personaFile, PERSONA_TEMPLATE); } catch { /* best-effort */ }
+    }
+    try { persona = readFileSync(personaFile, 'utf8'); } catch { persona = null; }
+  }
+
   const cfg = {
     requirePin,
     pin: pin ? String(pin) : null,
     readOnly,
-    permissionMode: readOnly ? 'default' : 'acceptEdits',
-    allowedTools: readOnly ? READONLY_TOOLS : ACTION_TOOLS,
+    permissionMode: fans ? 'default' : (readOnly ? 'default' : 'acceptEdits'),
+    allowedTools: fans ? [] : (readOnly ? READONLY_TOOLS : ACTION_TOOLS),
+    disallowedTools: fans ? FAN_DISALLOWED : [],
     continueConversation,
     anyChat,
     chat: chatRaw,
     chatJid,
     boundJid: file.boundJid || null,
     allow,
-    shell: cli.noShell ? false : (file.shell !== false) && !readOnly,
+    shell: cli.noShell || fans ? false : (file.shell !== false) && !readOnly,
+    fans,
+    persona,
+    personaFile,
+    fanModel: cli.fanModel || process.env.CLAUDE_WA_FAN_MODEL || file.fanModel || 'haiku',
+    fanDailyCap: Number(process.env.CLAUDE_WA_FAN_DAILY_CAP || file.fanDailyCap || 40),
+    fanGlobalCap: Number(process.env.CLAUDE_WA_FAN_GLOBAL_CAP || file.fanGlobalCap || 400),
+    fanCapMessage: file.fanCapMessage || '⏳ I’ve hit my chat limit for today — catch you tomorrow! 💛',
     claudeBin: cli.claudeBin || process.env.CLAUDE_WA_CLAUDE_BIN || file.claudeBin || 'claude',
     workdir: cli.workdir || process.env.CLAUDE_WA_WORKDIR || file.workdir || process.cwd(),
     authDir: process.env.CLAUDE_WA_AUTH_DIR || join(CONFIG_DIR, 'auth'),
@@ -94,6 +118,12 @@ function persist(cfg) {
     claudeBin: cfg.claudeBin,
     workdir: cfg.workdir,
     timeoutMs: cfg.timeoutMs,
+    fans: cfg.fans,
+    personaFile: cfg.personaFile,
+    fanModel: cfg.fanModel,
+    fanDailyCap: cfg.fanDailyCap,
+    fanGlobalCap: cfg.fanGlobalCap,
+    fanCapMessage: cfg.fanCapMessage,
   };
   try { writeFileSync(CONFIG_FILE, JSON.stringify(toSave, null, 2)); } catch { /* best-effort */ }
 }

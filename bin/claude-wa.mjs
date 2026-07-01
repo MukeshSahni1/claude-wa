@@ -28,7 +28,15 @@ By default (open mode) there is NO PIN: your "Message yourself" chat becomes the
 Claude Code console — every message is read and executed, with memory across
 messages. Other chats are ignored.
 
+Fan mode (--fans) flips the direction: the linked number becomes a public AI
+persona. Anyone who DMs it (e.g. from a wa.me link pinned in an Instagram bio)
+chats with your AI twin — chat only, zero tools, per-fan memory, daily caps.
+Edit ~/.claude-wa/persona.md to shape the personality (edits apply live).
+
 Options:
+  --fans               Fan mode: public AI persona for anyone who DMs the number
+  --persona <file>     Persona instructions for fan mode (default: ~/.claude-wa/persona.md)
+  --fan-model <m>      Model for fan replies (default: haiku — fast & cheap)
   --read-only          Claude can read & answer but not edit or run shell
   --no-continue        Treat each message as a fresh, standalone prompt
   --pin [value]        Opt into PIN mode: messages must start with "<PIN> "
@@ -53,6 +61,9 @@ if (has('--help') || has('-h')) { printHelp(); process.exit(0); }
 if (has('--version') || has('-v')) { console.log(pkg.version); process.exit(0); }
 
 const cfg = loadConfig({
+  fans: has('--fans'),
+  persona: get('--persona'),
+  fanModel: get('--fan-model'),
   readOnly: has('--read-only'),
   noContinue: has('--no-continue'),
   pinFlag: has('--pin'),
@@ -74,9 +85,15 @@ if (has('--accept-trust')) {
 
 // Startup banner.
 console.log(`\nclaude-wa v${pkg.version}`);
-console.log(`  Access  : ${cfg.requirePin ? `PIN  ${cfg.pin}${cfg.generatedPin ? '  (auto-generated, saved)' : ''}` : 'OPEN — message your self-chat, no PIN'}`);
-console.log(`  Mode    : ${cfg.readOnly ? 'READ-ONLY' : 'ACTION (edits + shell)'}${cfg.continueConversation ? ' · remembers context' : ''}`);
-console.log(`  Workdir : ${cfg.workdir}`);
+if (cfg.fans) {
+  console.log('  Mode    : 🎭 FAN MODE — public AI persona (chat only, no tools)');
+  console.log(`  Persona : ${cfg.personaFile}`);
+  console.log(`  Caps    : ${cfg.fanDailyCap}/fan/day · ${cfg.fanGlobalCap} total/day · model: ${cfg.fanModel}`);
+} else {
+  console.log(`  Access  : ${cfg.requirePin ? `PIN  ${cfg.pin}${cfg.generatedPin ? '  (auto-generated, saved)' : ''}` : 'OPEN — message your self-chat, no PIN'}`);
+  console.log(`  Mode    : ${cfg.readOnly ? 'READ-ONLY' : 'ACTION (edits + shell)'}${cfg.continueConversation ? ' · remembers context' : ''}`);
+  console.log(`  Workdir : ${cfg.workdir}`);
+}
 if (cfg.anyChat) console.log('  Chats   : ⚠ ANY chat (Claude will reply everywhere)');
 else if (cfg.chat) console.log(`  Chat    : bound to ${cfg.chat}`);
 if (cfg.allow.length) console.log(`  Allow   : + ${cfg.allow.join(', ')}`);

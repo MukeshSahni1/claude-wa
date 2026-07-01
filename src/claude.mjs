@@ -15,8 +15,13 @@ export function runClaude(prompt, cfg, opts = {}) {
   return new Promise((resolve) => {
     const args = ['-p'];
     if (opts.continue) args.push('--continue');
+    if (opts.resume) args.push('--resume', opts.resume);           // per-fan threads
+    if (opts.sessionId) args.push('--session-id', opts.sessionId);
+    if (opts.systemPrompt) args.push('--append-system-prompt', opts.systemPrompt);
+    if (opts.model) args.push('--model', opts.model);
     if (cfg.permissionMode) args.push('--permission-mode', cfg.permissionMode);
     if (cfg.allowedTools && cfg.allowedTools.length) args.push('--allowedTools', ...cfg.allowedTools);
+    if (cfg.disallowedTools && cfg.disallowedTools.length) args.push('--disallowedTools', ...cfg.disallowedTools);
 
     let child;
     try {

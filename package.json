@@ -1,7 +1,7 @@
 {
   "name": "claude-wa",
-  "version": "0.1.1",
-  "description": "Talk to Claude Code from WhatsApp. Install, scan a QR, and drive Claude Code from your phone — read, edit, run shell, deploy.",
+  "version": "0.2.0",
+  "description": "Turn a WhatsApp number into Claude: a dev console for your self-chat, or (fan mode) a public AI persona your followers can DM — pin the wa.me link in your bio.",
   "type": "module",
   "bin": {
     "claude-wa": "bin/claude-wa.mjs"

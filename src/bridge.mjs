@@ -19,6 +19,7 @@ import pino from 'pino';
 import { existsSync, mkdirSync } from 'node:fs';
 import { runClaude, runShell } from './claude.mjs';
 import { isTrusted, acceptTrust, saveBoundJid } from './config.mjs';
+import { onFanMessage, loadFans } from './fans.mjs';
 
 const seen = new Set(); // de-dupe processed message ids
 function markSeen(id) { if (id) { seen.add(id); if (seen.size > 1000) seen.clear(); } }
@@ -124,7 +125,7 @@ async function onMessage(m, sock, cfg, state) {
 export async function startBridge(cfg) {
   if (!existsSync(cfg.authDir)) mkdirSync(cfg.authDir, { recursive: true });
 
-  if (!cfg.readOnly && !isTrusted(cfg.workdir)) {
+  if (!cfg.fans && !cfg.readOnly && !isTrusted(cfg.workdir)) {
     // Action mode needs a trusted workspace, and you can't accept a terminal
     // dialog from your phone — running claude-wa here is the consent. Auto-trust
     // so commands actually work. (Read-only mode never auto-trusts.)
@@ -134,6 +135,11 @@ export async function startBridge(cfg) {
 
   const logger = pino({ level: 'silent' });
   const state = { selfIds: new Set(), hasLid: false, boundJid: cfg.boundJid || null, started: false };
+  if (cfg.fans) {
+    state.fans = loadFans(cfg);
+    state.seenFan = new Set();
+    state.enqueue = enqueue;
+  }
 
   async function connect() {
     const { state: auth, saveCreds } = await useMultiFileAuthState(cfg.authDir);
@@ -169,6 +175,15 @@ export async function startBridge(cfg) {
         const me = sock.user || {};
         state.selfIds = new Set([me.id, me.lid].filter(Boolean).map(jidNormalizedUser));
         state.hasLid = Boolean(me.lid);
+        if (cfg.fans) {
+          const num = String(me.id || '').split(/[:@]/)[0];
+          console.log('\n✅  Connected. This number is now a public AI persona.');
+          console.log(`\n   📌 Pin this in your bio:  https://wa.me/${num}?text=hi`);
+          console.log(`   🎭 Persona file        :  ${cfg.personaFile}  (edits apply live)`);
+          console.log(`   🛡  Caps               :  ${cfg.fanDailyCap}/fan/day · ${cfg.fanGlobalCap} total/day · model: ${cfg.fanModel}`);
+          console.log('   🎮 Owner controls      :  message yourself  stats · pause · resume\n');
+          return;
+        }
         console.log('\n✅  Connected. Your WhatsApp is now a Claude Code remote.');
         if (cfg.requirePin) {
           console.log(`   Text:  ${cfg.pin} <message>   from this account.`);
@@ -188,7 +203,7 @@ export async function startBridge(cfg) {
 
     sock.ev.on('messages.upsert', async ({ messages }) => {
       for (const m of messages) {
-        try { await onMessage(m, sock, cfg, state); }
+        try { await (cfg.fans ? onFanMessage(m, sock, cfg, state) : onMessage(m, sock, cfg, state)); }
         catch (e) { console.log('[handler] error:', e?.message); }
       }
     });

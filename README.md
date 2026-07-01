@@ -22,6 +22,11 @@ One Node process links to WhatsApp via the multi-device protocol
 ([Baileys](https://github.com/WhiskeySockets/Baileys)) and pipes your messages to
 the `claude` CLI.
 
+**Also in the box: [🎭 Fan mode](#-fan-mode--your-ai-twin-in-your-followers-dms)** —
+flip the direction and the number becomes a public **AI twin** your followers
+can DM. Pin the `wa.me` link in your Instagram bio and it chats with your fans
+in your voice, 24/7 (chat-only, hard guardrails, daily caps).
+
 ---
 
 ## Quickstart
@@ -68,6 +73,38 @@ npm i -g claude-wa && claude-wa
 Only your **"Message yourself"** chat is wired up — Claude never touches your
 other WhatsApp conversations.
 
+## 🎭 Fan mode — your AI twin in your followers' DMs
+
+Fan mode flips the direction: instead of *you* driving Claude, **your audience
+chats with an AI persona of you**. Link a WhatsApp number, pin the `wa.me` link
+in your Instagram bio, and every DM gets an in-character reply — 24/7.
+
+```console
+$ npx claude-wa --fans
+
+✅  Connected. This number is now a public AI persona.
+
+   📌 Pin this in your bio:  https://wa.me/9198XXXXXXXX?text=hi
+   🎭 Persona file        :  ~/.claude-wa/persona.md  (edits apply live)
+   🛡  Caps               :  40/fan/day · 400 total/day · model: haiku
+   🎮 Owner controls      :  message yourself  stats · pause · resume
+```
+
+Edit `~/.claude-wa/persona.md` — name, vibe, what to plug — and the bot picks it
+up on the next message, no restart.
+
+**Built-in guardrails** (this is strangers on the internet, so fan mode is locked
+down hard):
+
+- **Chat only, zero tools** — no shell, no file access, and prompt-injection
+  refusals stay in character.
+- **Per-fan memory** — each fan gets their own conversation thread.
+- **Daily caps** — per-fan and global (`CLAUDE_WA_FAN_DAILY_CAP`,
+  `CLAUDE_WA_FAN_GLOBAL_CAP`) so API spend can't run away.
+- **Groups/status ignored**; your own outgoing messages are never treated as
+  prompts, so you can always jump into a chat yourself.
+- **Owner controls** from your self-chat: `stats`, `pause`, `resume`.
+
 ## Modes
 
 **Open (default)** — no PIN, self-chat is the console, conversation memory on.
@@ -82,6 +119,9 @@ shared or you want a second factor.
 ## Options
 
 ```text
+--fans               Fan mode: public AI persona for anyone who DMs the number
+--persona <file>     Persona instructions for fan mode (default: ~/.claude-wa/persona.md)
+--fan-model <m>      Model for fan replies (default: haiku — fast & cheap)
 --read-only          Read & answer only — no edits, no shell
 --no-continue        Each message is a fresh, standalone prompt (no memory)
 --pin [value]        Opt into PIN mode (value optional; auto-generated if omitted)
