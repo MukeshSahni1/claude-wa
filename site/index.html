@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twin — your AI twin on WhatsApp</title>
+<meta name="description" content="Pin one link in your Instagram bio and your followers chat with your AI twin on WhatsApp — in your voice, 24/7. Built for creators.">
+<meta property="og:title" content="Twin — your AI twin on WhatsApp">
+<meta property="og:description" content="Your followers DM one number. Your AI twin replies — in your voice, 24/7.">
+<style>
+  :root{
+    --bg:#0b0714; --card:#160d26; --card2:#1d1233;
+    --txt:#f4eeff; --dim:#b9a8d8;
+    --brand:#a855f7; --brand2:#ec4899; --accent:#22d3a5;
+    --grad:linear-gradient(135deg,#a855f7,#ec4899);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--txt);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:hidden}
+  .wrap{max-width:680px;margin:0 auto;padding:0 20px}
+  a{color:var(--brand)}
+
+  header{padding:18px 0;display:flex;align-items:center;gap:10px}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-.5px}
+  .logo em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+
+  .hero{padding:44px 0 30px;text-align:center}
+  .hero h1{font-size:clamp(34px,8vw,52px);line-height:1.12;font-weight:800;letter-spacing:-1.5px}
+  .hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero p{margin:18px auto 0;max-width:480px;color:var(--dim);font-size:18px}
+  .cta{display:inline-block;margin-top:28px;padding:16px 34px;border-radius:999px;background:var(--grad);color:#fff;font-weight:700;font-size:17px;text-decoration:none;box-shadow:0 8px 30px rgba(168,85,247,.35);transition:transform .15s}
+  .cta:active{transform:scale(.97)}
+  .sub{margin-top:12px;font-size:13px;color:var(--dim)}
+
+  /* phone mock */
+  .phone{margin:42px auto 0;max-width:340px;background:var(--card);border:1px solid #2c1b4a;border-radius:26px;padding:16px 14px;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .phone .bar{display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid #2c1b4a;margin-bottom:12px}
+  .pfp{width:36px;height:36px;border-radius:50%;background:var(--grad);display:grid;place-items:center;font-size:18px}
+  .phone .bar b{font-size:14px}
+  .phone .bar small{display:block;color:var(--accent);font-size:11px}
+  .msg{max-width:85%;padding:9px 13px;border-radius:14px;font-size:14px;margin-bottom:8px}
+  .them{background:#241640;border-bottom-left-radius:4px}
+  .me{background:#134e3a;margin-left:auto;border-bottom-right-radius:4px}
+
+  section{padding:46px 0}
+  h2{font-size:26px;letter-spacing:-.5px;margin-bottom:22px;text-align:center}
+  .steps{display:grid;gap:14px}
+  .step{background:var(--card);border:1px solid #2c1b4a;border-radius:16px;padding:18px;display:flex;gap:14px;align-items:flex-start}
+  .n{flex:0 0 34px;height:34px;border-radius:10px;background:var(--grad);display:grid;place-items:center;font-weight:800}
+  .step b{display:block;margin-bottom:2px}
+  .step span{color:var(--dim);font-size:14px}
+
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .f{background:var(--card);border:1px solid #2c1b4a;border-radius:16px;padding:16px}
+  .f .i{font-size:22px}
+  .f b{display:block;margin:6px 0 2px;font-size:14px}
+  .f span{color:var(--dim);font-size:13px;line-height:1.45}
+
+  .demo{background:var(--card2);border:1px dashed #4b2a7a;border-radius:20px;padding:26px;text-align:center}
+  .demo b{font-size:18px}
+  .demo p{color:var(--dim);font-size:14px;margin-top:6px}
+  .pill{display:inline-block;margin-top:14px;padding:10px 22px;border-radius:999px;border:1px solid var(--brand);color:var(--brand);font-weight:700;font-size:14px;text-decoration:none}
+
+  form{display:grid;gap:12px;background:var(--card);border:1px solid #2c1b4a;border-radius:20px;padding:24px}
+  label{font-size:13px;color:var(--dim)}
+  input{width:100%;margin-top:4px;padding:13px 14px;border-radius:12px;border:1px solid #3a2560;background:#0f0920;color:var(--txt);font-size:15px}
+  input:focus{outline:none;border-color:var(--brand)}
+  button{padding:15px;border-radius:999px;border:0;background:var(--grad);color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+  .ok{display:none;text-align:center;padding:24px;background:var(--card);border:1px solid var(--accent);border-radius:20px}
+
+  details{background:var(--card);border:1px solid #2c1b4a;border-radius:14px;padding:14px 18px;margin-bottom:10px}
+  summary{cursor:pointer;font-weight:600;font-size:15px}
+  details p{color:var(--dim);font-size:14px;margin-top:8px}
+
+  footer{padding:36px 0 60px;text-align:center;color:var(--dim);font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header><div class="logo">🎭 <em>Twin</em></div></header>
+
+  <div class="hero">
+    <h1>Your <em>AI twin</em> in your fans' DMs</h1>
+    <p>Pin one link in your Instagram bio. Your followers chat with <b>you</b> on WhatsApp — your vibe, your voice, 24/7. You sleep, Twin replies.</p>
+    <a class="cta" href="#waitlist">Get my twin →</a>
+    <div class="sub">Early access · free for the first creators</div>
+
+    <div class="phone">
+      <div class="bar"><div class="pfp">🎭</div><div><b>Priya ✨ (AI twin)</b><small>online</small></div></div>
+      <div class="msg them">heyy priya!! that lehenga reel 🔥 where's it from??</div>
+      <div class="msg me">omg thank youu 🥹 it's from that Chandni Chowk haul! link is in my latest post 💜</div>
+      <div class="msg them">are you actually replying?? 😭</div>
+      <div class="msg me">it's my AI twin! I trained her myself — she knows all my looks 😄</div>
+    </div>
+  </div>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div><b>Tell us about you</b><span>Your name, your vibe, what you post, what you're plugging right now. 5 minutes.</span></div></div>
+      <div class="step"><div class="n">2</div><div><b>We switch on your twin</b><span>You get a WhatsApp number that talks exactly like you — test it, tweak it till it feels right.</span></div></div>
+      <div class="step"><div class="n">3</div><div><b>Pin the link in your bio</b><span>Fans tap → WhatsApp opens → they're talking to you. Every DM answered, every fan feels seen.</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Built for creators, not techies</h2>
+    <div class="feat">
+      <div class="f"><div class="i">🗣️</div><b>Your voice</b><span>Hinglish, emojis, inside jokes — it talks like you, not like a bot.</span></div>
+      <div class="f"><div class="i">🔗</div><b>Plugs your stuff</b><span>Naturally drops your latest reel, drop, or brand link when it fits the convo.</span></div>
+      <div class="f"><div class="i">🧠</div><b>Remembers fans</b><span>Every fan gets their own ongoing chat. Come back tomorrow, it remembers.</span></div>
+      <div class="f"><div class="i">🛡️</div><b>Safe by design</b><span>Honest that it's an AI when asked. No personal info, no weird stuff, daily limits.</span></div>
+      <div class="f"><div class="i">✋</div><b>You stay in control</b><span>Jump into any chat yourself anytime. Pause the twin with one message.</span></div>
+      <div class="f"><div class="i">📌</div><b>One bio link</b><span>No app for your fans to install. Just WhatsApp — which they already have.</span></div>
+    </div>
+  </section>
+
+  <section id="demo">
+    <div class="demo">
+      <b>👀 Try a live twin first</b>
+      <p id="demoText">Demo twin opens soon — join the waitlist and we'll WhatsApp you the demo number.</p>
+      <a class="pill" id="demoLink" href="#waitlist" style="display:none">💬 DM the demo twin</a>
+    </div>
+  </section>
+
+  <section id="waitlist">
+    <h2>Get early access</h2>
+    <form name="waitlist" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="wlForm">
+      <input type="hidden" name="form-name" value="waitlist">
+      <p style="display:none"><input name="bot-field"></p>
+      <div><label>Your name</label><input name="name" required placeholder="Priya Sharma"></div>
+      <div><label>Instagram handle</label><input name="instagram" required placeholder="@priya.styles"></div>
+      <div><label>WhatsApp number</label><input name="whatsapp" required inputmode="tel" placeholder="98765 43210"></div>
+      <button type="submit">Join the waitlist 🎭</button>
+      <div class="sub" style="text-align:center">We'll WhatsApp you when your twin is ready. No spam, promise.</div>
+    </form>
+    <div class="ok" id="wlOk"><b>You're on the list! 🎉</b><p style="color:var(--dim);font-size:14px;margin-top:6px">We'll WhatsApp you soon with your twin.</p></div>
+  </section>
+
+  <section>
+    <h2>FAQ</h2>
+    <details><summary>Will fans know it's an AI?</summary><p>If they ask directly — yes, it's honest ("I'm the AI twin!"). Most fans love that you have one. You can also say it upfront in your bio: "chat with my AI 💜".</p></details>
+    <details><summary>What if it says something wrong?</summary><p>You set the rules — what it can talk about, what it plugs, what it avoids. It refuses weird requests politely, and you can pause it or jump into any chat yourself, anytime.</p></details>
+    <details><summary>Do I need a new SIM?</summary><p>No. We can run your twin on a number we provide — you just pin the link. (You can use your own number later if you want.)</p></details>
+    <details><summary>How much does it cost?</summary><p>Early creators get it free while we polish it. After that, a simple monthly price — less than what one brand post pays you.</p></details>
+  </section>
+
+  <footer>
+    🎭 Twin · built on <a href="https://github.com/MukeshSahni1/claude-wa">claude-wa</a> (open source) · Made in India 🇮🇳
+  </footer>
+</div>
+
+<script>
+  // Flip these when the demo twin is live: set demoNumber to digits with country code.
+  const CONFIG = { demoNumber: "" };
+  if (CONFIG.demoNumber) {
+    const a = document.getElementById('demoLink');
+    a.href = 'https://wa.me/' + CONFIG.demoNumber + '?text=hi';
+    a.style.display = 'inline-block';
+    document.getElementById('demoText').textContent = 'DM our demo twin right now and see how it feels — she replies in seconds.';
+  }
+  // Netlify form: AJAX submit for a no-reload thank-you.
+  document.getElementById('wlForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    try {
+      await fetch('/', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: new URLSearchParams(new FormData(f)).toString() });
+      f.style.display = 'none';
+      document.getElementById('wlOk').style.display = 'block';
+    } catch { f.submit(); }
+  });
+</script>
+</body>
+</html>
